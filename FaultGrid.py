@@ -62,7 +62,7 @@ seismotmp = copy.deepcopy(seismo)
 if __name__=='__main__':
         
     inputs = []
-    for ifault in faultnames[:]:
+    for ifault in faultnames[-350:]:
         inputs.append((ifault,seismotmp,dist_fault))
 
     ncores = 5
@@ -122,8 +122,8 @@ if __name__=='__main__':
                 selec_fault[ifault.name]['time'] = [np.round(dist_hypo/(Vs*5/4)),np.round(dist_hypo/(Vs*4/5)+Vs)]
                 numfaults += 1
 
-
-    for idx, ifault in enumerate(selec_fault):
+    for idx, (ifault, val) in enumerate(sorted(selec_fault.items(),key=lambda item: min(abs(t) for t in item[1]['time']))):
+    # for idx, ifault in enumerate(selec_fault):
         filetmp = copy.deepcopy(filecmt)
         lon,lat,dep = selec_fault[ifault]['center']
         filetmp.lon, filetmp.lat, filetmp.dep = lon,lat,dep
@@ -137,6 +137,7 @@ if __name__=='__main__':
 
         filetmp.sdr2MT(selec_fault[ifault]['sd'][0],selec_fault[ifault]['sd'][1],selec_fault[ifault]['rake'])
         filetmp.ts = 0 #Cause we will change it directly in the inversion code
+        filetmp.pdeline = filetmp.pdeline.replace('SOUTH ISLAND',ifault)
         idxfmt = f"{idx:02d}"
         filetmp.write(join(GCMT_dir,i_cmt_file+'_'+idxfmt))
 
