@@ -45,12 +45,13 @@ seismo.proj2wgs = pp.Transformer.from_crs(seismo.utm, seismo.wgs, always_xy=True
 seismo.read_CMTSolutions(i_cmt_file)
 
 Mw = seismo.mag
+#Wells and Coppersmith (1994) empirical relations for all faults
 RLD = 10 ** (-2.44 + 0.59 * Mw)
 dist_fault = RLD / 2
 dist_fault = 1.1 *dist_fault
 # dist_fault = 50
 Est_Area = 10 ** (-3.49 + 0.91 * Mw)
-Thrs_Area= Est_Area*0.2
+Thrs_Area= Est_Area*0.2 #Threshold of 20% of the estimated total area
 #----------------------------------------------------
 # Build Faults list from the NW CommunityFaultModel
 #----------------------------------------------------
