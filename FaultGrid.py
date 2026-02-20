@@ -63,7 +63,7 @@ seismotmp = copy.deepcopy(seismo)
 if __name__=='__main__':
         
     inputs = []
-    for ifault in faultnames[-350:]:
+    for ifault in faultnames[:]:
         inputs.append((ifault,seismotmp,dist_fault))
 
     ncores = 5
@@ -117,10 +117,12 @@ if __name__=='__main__':
                 selec_fault[ifault.name] = {}
                 selec_fault[ifault.name]['center'] = [lon,lat,xy[2]]
                 
-                selec_fault[ifault.name]['sd'] = [strike,dip]
+                selec_fault[ifault.name]['sd'] = [strike,dip] #Strike and Dip original
+                selec_fault[ifault.name]['strike'] = [strike - 35 , strike + 35]
+                selec_fault[ifault.name]['dip'] = [dip - 20 , min(dip + 20 , 90)]
                 selec_fault[ifault.name]['Area'] = area
                 # selec_fault[ifault.name]['time'] = [dist_hypo/Vs-Vs*2,dist_hypo/Vs+Vs*2]
-                selec_fault[ifault.name]['time'] = [np.round(dist_hypo/(Vs*5/4)),np.round(dist_hypo/(Vs*4/5)+Vs)]
+                selec_fault[ifault.name]['time'] = [max(0,np.round(dist_hypo/(Vs*5/4))-5),np.round(dist_hypo/(Vs*4/5)+Vs)+5]
                 numfaults += 1
 
     for idx, (ifault, val) in enumerate(sorted(selec_fault.items(),key=lambda item: min(abs(t) for t in item[1]['time']))):
@@ -130,13 +132,13 @@ if __name__=='__main__':
         filetmp.lon, filetmp.lat, filetmp.dep = lon,lat,dep
         if selec_fault[ifault]['sd'][0]<180:
             if selec_fault[ifault]['sd'][1]<50:
-                selec_fault[ifault]['rake'] = 110
+                selec_fault[ifault]['rake'] = [60, 120]
             else:
-                selec_fault[ifault]['rake'] = 135
+                selec_fault[ifault]['rake'] = [110, 170]
         elif selec_fault[ifault]['sd'][0]>180:
-            selec_fault[ifault]['rake'] = 135
+            selec_fault[ifault]['rake'] = [110, 170]
 
-        filetmp.sdr2MT(selec_fault[ifault]['sd'][0],selec_fault[ifault]['sd'][1],selec_fault[ifault]['rake'])
+        filetmp.sdr2MT(selec_fault[ifault]['sd'][0],selec_fault[ifault]['sd'][1],np.mean(selec_fault[ifault]['rake']))
         filetmp.ts = 0 #Cause we will change it directly in the inversion code
         filetmp.pdeline = filetmp.pdeline.replace('SOUTH ISLAND',ifault)
         idxfmt = f"{idx:02d}"
