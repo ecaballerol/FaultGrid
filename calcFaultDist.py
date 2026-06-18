@@ -4,16 +4,12 @@
 
 # Import Wavemod
 import numpy as np
-import wavemod as wm
 from copy import deepcopy
 
 import csi.seismiclocations as sl
 import csi.TriangularPatches as triangleFault
-import csi.geodeticplot as geoplt
 import pyproj as pp
 
-import cmt
-from Arguments import *
 
 def calcFaultSel(ifault,seisloc,dist_fault):
 
