@@ -12,7 +12,6 @@ from shutil import copyfile
 import numpy as np
 import datetime as dt
 import matplotlib.pyplot as plt
-from obspy import UTCDateTime
 import copy
 import pyproj as pp
 import glob
@@ -23,7 +22,6 @@ from multiprocessing import Pool
 
 # Import csi
 import csi.seismiclocations as sl
-import csi.TriangularPatches as triangleFault
 import csi.geodeticplot as geoplt
 import cmt
 from Arguments import *
@@ -51,7 +49,8 @@ dist_fault = RLD / 2
 dist_fault = 1.1 *dist_fault
 # dist_fault = 50
 Est_Area = 10 ** (-3.49 + 0.91 * Mw)
-Thrs_Area= Est_Area*0.2 #Threshold of 20% of the estimated total area
+Thrs_Area= Est_Area*0.085 #Threshold of 20% of the estimated total area
+# Thrs_Area= Est_Area*0.2 #Threshold of 20% of the estimated total area
 #----------------------------------------------------
 # Build Faults list from the NW CommunityFaultModel
 #----------------------------------------------------
@@ -66,7 +65,7 @@ if __name__=='__main__':
     for ifault in faultnames[:]:
         inputs.append((ifault,seismotmp,dist_fault))
 
-    ncores = 5
+    ncores = 6
     pool = Pool(ncores)
     o = pool.map(wrapperfaultSel ,inputs)
 
@@ -113,17 +112,29 @@ if __name__=='__main__':
         if ifault.name =='The_Humps':
             strike +=180
         if area > Thrs_Area[0]:
-            if (strike > nodal1[0]-105) and (strike < nodal1[0]+105):
+            if (strike > nodal1[0]-90) and (strike < nodal1[0]+90):
                 selec_fault[ifault.name] = {}
                 selec_fault[ifault.name]['center'] = [lon,lat,xy[2]]
                 
                 selec_fault[ifault.name]['sd'] = [strike,dip] #Strike and Dip original
-                selec_fault[ifault.name]['strike'] = [strike - 35 , strike + 35]
+                selec_fault[ifault.name]['strike'] = [strike - 30 , strike + 30]
                 selec_fault[ifault.name]['dip'] = [dip - 20 , min(dip + 20 , 90)]
                 selec_fault[ifault.name]['Area'] = area
                 # selec_fault[ifault.name]['time'] = [dist_hypo/Vs-Vs*2,dist_hypo/Vs+Vs*2]
                 selec_fault[ifault.name]['time'] = [max(0,np.round(dist_hypo/(Vs*5/4))-5),np.round(dist_hypo/(Vs*4/5)+Vs)+5]
                 numfaults += 1
+            elif (strike > nodal2[0]-90) and (strike < nodal2[0]+90):
+                selec_fault[ifault.name] = {}
+                selec_fault[ifault.name]['center'] = [lon,lat,xy[2]]
+                
+                selec_fault[ifault.name]['sd'] = [strike,dip] #Strike and Dip original
+                selec_fault[ifault.name]['strike'] = [strike - 30 , strike + 30]
+                selec_fault[ifault.name]['dip'] = [dip - 20 , min(dip + 20 , 90)]
+                selec_fault[ifault.name]['Area'] = area
+                # selec_fault[ifault.name]['time'] = [dist_hypo/Vs-Vs*2,dist_hypo/Vs+Vs*2]
+                selec_fault[ifault.name]['time'] = [max(0,np.round(dist_hypo/(Vs*5/4))-5),np.round(dist_hypo/(Vs*4/5)+Vs)+5]
+                numfaults += 1
+                
 
     for idx, (ifault, val) in enumerate(sorted(selec_fault.items(),key=lambda item: min(abs(t) for t in item[1]['time']))):
     # for idx, ifault in enumerate(selec_fault):
